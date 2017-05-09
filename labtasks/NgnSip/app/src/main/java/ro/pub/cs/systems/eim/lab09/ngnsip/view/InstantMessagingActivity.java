@@ -13,6 +13,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.doubango.ngn.events.NgnMessagingEventArgs;
+import org.doubango.ngn.sip.NgnAVSession;
+import org.doubango.ngn.sip.NgnMessagingSession;
 
 import ro.pub.cs.systems.eim.lab09.ngnsip.R;
 import ro.pub.cs.systems.eim.lab09.ngnsip.broadcastreceiver.InstantMessagingBroadcastReceiver;
@@ -22,6 +24,8 @@ public class InstantMessagingActivity extends AppCompatActivity {
 
     private IntentFilter instantMessagingIntentFilter;
     private InstantMessagingBroadcastReceiver instantMessagingBroadcastReceiver;
+    private NgnMessagingSession instantMessagingSession;
+
 
     private String SIPAddress = null;
 
@@ -46,6 +50,21 @@ public class InstantMessagingActivity extends AppCompatActivity {
                 // in the graphic user interface (conversationTextView)
                 // !!! do not forget to release the session using the static method releaseSession()
                 // in the NgnMessagingSession class
+
+                instantMessagingSession = NgnMessagingSession.createOutgoingSession(
+                        VoiceCallActivity.getInstance().getNgnSipService().getSipStack(),
+                        remotePartyUri
+                );
+
+                if(!instantMessagingSession.sendTextMessage(messageEditText.getText().toString())) {
+                    Log.e(Constants.TAG, "Failed to send message");
+                } else {
+                    String conversation = conversationTextView.getText().toString();
+                    conversationTextView.setText(conversation + "Me: " + messageEditText.getText().toString() + "\n");
+                    messageEditText.setText("");
+                    Log.d(Constants.TAG, "Succeeded to send message");
+                }
+                NgnMessagingSession.releaseSession(instantMessagingSession);
 
             } else {
                 Toast.makeText(InstantMessagingActivity.this, "The SIP Service instance is null", Toast.LENGTH_SHORT).show();
